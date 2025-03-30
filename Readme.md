@@ -1,3 +1,3 @@
 # chai aur backend series
 
-Learning a backend with Hitesh - Youtube(Chai aur code)
+This is a video series on backend with javascript
