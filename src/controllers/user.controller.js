@@ -7,8 +7,8 @@ import { User } from "../models/user.model.js";
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
-    const accessToken = user.generateAccessToken;
-    const refreshToken = user.generateRefreshToken;
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
 
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
@@ -99,19 +99,23 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
 
-  if (!(username || email)) {
+  // ERROR: user did not provide any value in username/email field
+  if (!username && !email) {
     throw new ApiError(400, "username or email is required");
   }
+
   const user = await User.findOne({
     $or: [{ email }, { username }],
   });
 
+  // ERROR: if the user do not exist in our DATABASE
   if (!user) {
     throw new ApiError(404, "User doesn't exist");
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
 
+  // ERROR: if the password is incorrect
   if (!isPasswordValid) {
     throw new ApiError(401, "Password is not valid");
   }
@@ -120,6 +124,7 @@ const loginUser = asyncHandler(async (req, res) => {
     user._id
   );
 
+  // ERROR: we do not provide password and refresh token to the user
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
@@ -130,6 +135,7 @@ const loginUser = asyncHandler(async (req, res) => {
   };
 
   console.log("AccessToken", accessToken, "\nRefreshToken", refreshToken);
+  console.log(user)
 
   return res
     .status(200)
@@ -166,8 +172,10 @@ const logoutUser = asyncHandler(async (req, res) => {
     secure: true,
   };
 
+  console.log(req.user);
+  
   return res
-    .staus(200)
+    .status(200)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
     .json(new ApiResponse(200, {}, "User logged out"));
