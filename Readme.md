@@ -1,3 +1,3 @@
-# chai aur backend series
+# Clothing Ecommerce Backed
 
-This is a video tutorial on backend with javascript --- Chai Aur Code
+Designing a backend for a clothing website.
